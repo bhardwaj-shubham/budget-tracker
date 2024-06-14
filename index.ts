@@ -1,1 +1,7 @@
-console.log("Hello via Bun!");
+import app from "./src/app";
+
+Bun.serve({
+  fetch: app.fetch,
+});
+
+console.log("Server running on port 3000");

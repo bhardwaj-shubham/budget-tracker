@@ -33,6 +33,13 @@ expenseRoute
     c.status(201);
     return c.json({ message: "Success" });
   })
+  .get("/total-spent", (c) => {
+    const totalSpent = fakeExpenses.reduce(
+      (total, expense) => total + expense.amount,
+      0
+    );
+    return c.json({ totalSpent });
+  })
   .get("/:id{[0-9]+}", (c) => {
     const id = Number.parseInt(c.req.param("id"));
 

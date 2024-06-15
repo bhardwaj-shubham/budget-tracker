@@ -23,5 +23,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noPropertyAccessFromIndexSignature": false
-  }
+  },
+  "include": ["server/src/**/*"],
+  "exclude": ["node_modules", "**/*.spec.ts"]
 }

@@ -1,7 +1,9 @@
+import ExpenseCard from "@/components/ExpenseCard";
+
 function App() {
   return (
     <>
-      <h1>Hello, from react</h1>
+      <ExpenseCard />
     </>
   );
 }

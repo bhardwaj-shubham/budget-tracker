@@ -8,15 +8,17 @@ import {
 
 import * as React from "react";
 
+import { api } from "@/lib/api";
+
 const ExpenseCard = () => {
   const [totalSpent, setTotalSpent] = React.useState(0);
 
   React.useEffect(() => {
     const fetchTotalSpent = async () => {
-      const response = await fetch("/api/expenses/total-spent");
+      const response = await api.expenses["total-spent"].$get();
       const data = await response.json();
       setTotalSpent(data.totalSpent);
-      //   console.log(data);
+      console.log(data);
     };
     fetchTotalSpent();
   }, []);

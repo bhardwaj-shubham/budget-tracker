@@ -6,22 +6,32 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 
-import * as React from "react";
-
 import { api } from "@/lib/api";
+import { useQuery } from "@tanstack/react-query";
+import { Ellipsis } from "lucide-react";
+
+async function getTotalSpent() {
+  const res = await api.expenses["total-spent"].$get();
+  if (!res.ok) {
+    throw new Error("Cannot fetch the total spent");
+  }
+  const data = await res.json();
+  return data;
+}
 
 const ExpenseCard = () => {
-  const [totalSpent, setTotalSpent] = React.useState(0);
+  const { data, isPending, error } = useQuery({
+    queryKey: ["get-total-spent"],
+    queryFn: getTotalSpent,
+  });
 
-  React.useEffect(() => {
-    const fetchTotalSpent = async () => {
-      const response = await api.expenses["total-spent"].$get();
-      const data = await response.json();
-      setTotalSpent(data.totalSpent);
-      console.log(data);
-    };
-    fetchTotalSpent();
-  }, []);
+  if (error) {
+    return (
+      <h4 className="text-center items-center text-lg">
+        Error: {error.message}
+      </h4>
+    );
+  }
 
   return (
     <div className="">
@@ -30,7 +40,9 @@ const ExpenseCard = () => {
           <CardTitle>Total Spent</CardTitle>
           <CardDescription>The total amount you've spent.</CardDescription>
         </CardHeader>
-        <CardContent>{totalSpent}</CardContent>
+        <CardContent>
+          {isPending ? <Ellipsis className="animate-ping" /> : data.totalSpent}
+        </CardContent>
       </Card>
     </div>
   );

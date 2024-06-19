@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 
-const expenseRoute = new Hono();
+export const expensesRoute = new Hono();
 
 const expenseSchema = z.object({
   id: z.number().int().positive(),
@@ -20,7 +20,7 @@ const fakeExpenses: Expense[] = [
   { id: 3, title: "Rent", amount: 1000 },
 ];
 
-expenseRoute
+expensesRoute
   .get("/", async (c) => {
     return c.json({ expenses: fakeExpenses });
   })
@@ -64,5 +64,3 @@ expenseRoute
     c.status(200);
     return c.json({ message: "Expense deleted" });
   });
-
-export default expenseRoute;

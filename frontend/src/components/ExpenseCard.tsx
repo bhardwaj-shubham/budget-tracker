@@ -21,7 +21,7 @@ async function getTotalSpent() {
 
 const ExpenseCard = () => {
   const { data, isPending, error } = useQuery({
-    queryKey: ["get-total-spent"],
+    queryKey: ["get-total-expenses"],
     queryFn: getTotalSpent,
   });
 

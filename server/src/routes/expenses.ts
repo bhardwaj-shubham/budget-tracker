@@ -2,13 +2,16 @@ import { Hono } from "hono";
 import { z } from "zod";
 import { zValidator } from "@hono/zod-validator";
 import { getUser } from "../config/kinde";
+import { db } from "../db";
+import { expenses as expenseTable } from "../db/schema/expenses";
+import { eq } from "drizzle-orm";
 
 export const expensesRoute = new Hono();
 
 const expenseSchema = z.object({
   id: z.number().int().positive(),
   title: z.string().min(2).max(100),
-  amount: z.number().int().positive(),
+  amount: z.string(),
 });
 
 type Expense = z.infer<typeof expenseSchema>;
@@ -16,27 +19,40 @@ type Expense = z.infer<typeof expenseSchema>;
 const createExpenseSchema = expenseSchema.omit({ id: true });
 
 const fakeExpenses: Expense[] = [
-  { id: 1, title: "Groceries", amount: 50 },
-  { id: 2, title: "Utilities", amount: 100 },
-  { id: 3, title: "Rent", amount: 1000 },
+  { id: 1, title: "Groceries", amount: "50" },
+  { id: 2, title: "Utilities", amount: "100" },
+  { id: 3, title: "Rent", amount: "1000" },
 ];
 
 expensesRoute
   .get("/", getUser, async (c) => {
-    return c.json({ expenses: fakeExpenses });
+    const user = c.var.user;
+
+    const expenses = await db
+      .select()
+      .from(expenseTable)
+      .where(eq(expenseTable.userId, user.id));
+
+    return c.json({ expenses: expenses });
   })
   .post("/", getUser, zValidator("json", createExpenseSchema), async (c) => {
     const expense = await c.req.valid("json");
+    const user = c.var.user;
 
-    console.log(expense);
-    fakeExpenses.push({ ...expense, id: fakeExpenses.length + 1 });
+    const result = await db
+      .insert(expenseTable)
+      .values({
+        ...expense,
+        userId: user.id,
+      })
+      .returning();
 
     c.status(201);
-    return c.json({ message: "Success" });
+    return c.json(result);
   })
   .get("/total-spent", getUser, (c) => {
     const totalSpent = fakeExpenses.reduce(
-      (total, expense) => total + expense.amount,
+      (total, expense) => total + +expense.amount,
       0
     );
     return c.json({ totalSpent });

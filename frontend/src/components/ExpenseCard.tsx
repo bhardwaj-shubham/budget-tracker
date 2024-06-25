@@ -8,7 +8,7 @@ import {
 
 import { api } from "@/lib/api";
 import { useQuery } from "@tanstack/react-query";
-import { Ellipsis } from "lucide-react";
+import { Ellipsis, IndianRupeeIcon } from "lucide-react";
 
 async function getTotalSpent() {
   const res = await api.expenses["total-spent"].$get();
@@ -41,7 +41,13 @@ const ExpenseCard = () => {
           <CardDescription>The total amount you've spent.</CardDescription>
         </CardHeader>
         <CardContent>
-          {isPending ? <Ellipsis className="animate-ping" /> : data.totalSpent}
+          {isPending ? (
+            <Ellipsis className="animate-ping" />
+          ) : (
+            <span className="flex text-xl">
+              <IndianRupeeIcon className="my-1 mx-1" /> {data.total}
+            </span>
+          )}
         </CardContent>
       </Card>
     </div>

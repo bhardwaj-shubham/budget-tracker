@@ -4,6 +4,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@radix-ui/react-label";
 import { api } from "@/lib/api";
+import { zodValidator } from "@tanstack/zod-form-adapter";
+import { createExpenseSchema } from "@server/sharedType";
 
 export const Route = createFileRoute("/_authenticated/create-expense")({
   component: CreateExpense,
@@ -40,6 +42,10 @@ function CreateExpense() {
         <div className="my-2">
           <form.Field
             name="title"
+            validatorAdapter={zodValidator()}
+            validators={{
+              onChange: createExpenseSchema.shape.title,
+            }}
             children={(field) => (
               <>
                 <Label htmlFor={field.name}>Title</Label>
@@ -60,6 +66,10 @@ function CreateExpense() {
         <div className="my-2">
           <form.Field
             name="amount"
+            validatorAdapter={zodValidator()}
+            validators={{
+              onChange: createExpenseSchema.shape.amount,
+            }}
             children={(field) => (
               <>
                 <Label htmlFor={field.name}>Amount</Label>

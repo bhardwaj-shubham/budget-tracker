@@ -25,12 +25,12 @@ function Login() {
             </div>
           </div>
         </CardContent>
-        <CardFooter>
-          <Button
-            className="w-full"
-            onClick={() => (window.location.href = "/api/login")}
-          >
-            Login
+        <CardFooter className="px-4">
+          <Button className="w-full mx-2" asChild>
+            <a href="/api/login">Login</a>
+          </Button>
+          <Button className="w-full mx-2" variant="outline" asChild>
+            <a href="/api/register">Register</a>
           </Button>
         </CardFooter>
       </Card>

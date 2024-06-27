@@ -45,7 +45,7 @@ const ExpenseCard = () => {
             <Ellipsis className="animate-ping" />
           ) : (
             <span className="flex text-xl">
-              <IndianRupeeIcon className="my-1 mx-1" /> {data.total}
+              <IndianRupeeIcon className="my-1 mr-1" /> {data.total ?? 0}
             </span>
           )}
         </CardContent>

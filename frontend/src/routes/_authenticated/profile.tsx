@@ -37,11 +37,8 @@ function Profile() {
     <div className="flex justify-center items-center h-screen">
       <div className="bg-gray-200 text-black p-4 rounded-lg">
         <h1 className="text-2xl font-bold mb-4">Hello, {data.user.name}</h1>
-        <Button
-          variant="destructive"
-          onClick={() => (window.location.href = "/api/logout")}
-        >
-          Logout
+        <Button variant="destructive" asChild>
+          <a href="/api/logout">Logout</a>
         </Button>
       </div>
     </div>

@@ -15,6 +15,13 @@
       "when": 1719305156025,
       "tag": "0001_flat_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1719476612654,
+      "tag": "0002_large_firebrand",
+      "breakpoints": true
     }
   ]
 }

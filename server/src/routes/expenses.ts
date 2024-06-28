@@ -36,7 +36,8 @@ expensesRoute
     const result = await db
       .insert(expenseTable)
       .values(validatedExpense)
-      .returning();
+      .returning()
+      .then((res) => res[0]);
 
     c.status(201);
     return c.json(result);

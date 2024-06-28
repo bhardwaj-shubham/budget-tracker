@@ -1,6 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { api } from "@/lib/api";
-import { useQuery } from "@tanstack/react-query";
+import {
+  deleteExpense,
+  getAllExpensesQueryOptions,
+  loadingCreateExpenseQueryOptions,
+} from "@/lib/api";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   Table,
   TableBody,
@@ -11,25 +15,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { Trash2Icon, EllipsisIcon } from "lucide-react";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/expenses")({
   component: Expenses,
 });
 
-async function getAllExpenses() {
-  const res = await api.expenses.$get();
-  if (!res.ok) {
-    throw new Error("Cannot fetch the total spent");
-  }
-  const data = await res.json();
-  return data;
-}
-
 function Expenses() {
-  const { data, isPending, error } = useQuery({
-    queryKey: ["get-all-expenses"],
-    queryFn: getAllExpenses,
-  });
+  const { data, isPending, error } = useQuery(getAllExpensesQueryOptions);
+  const { data: loadingCreateExpense } = useQuery(
+    loadingCreateExpenseQueryOptions
+  );
 
   if (error) {
     return (
@@ -37,10 +35,6 @@ function Expenses() {
         Error: {error.message}
       </h4>
     );
-  }
-
-  if (data) {
-    console.log(data);
   }
 
   return (
@@ -54,6 +48,7 @@ function Expenses() {
             <TableHead>Title</TableHead>
             <TableHead className="text-right">Amount</TableHead>
             <TableHead className="text-right">Date</TableHead>
+            <TableHead className="text-right">Delete</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -66,8 +61,31 @@ function Expenses() {
                 <TableCell>{expense.title}</TableCell>
                 <TableCell className="text-right">{expense.amount}</TableCell>
                 <TableCell className="text-right">{expense.date}</TableCell>
+                <TableCell className="text-right">
+                  <DeleteExpenseButton id={expense.id} />
+                </TableCell>
               </TableRow>
             ))
+          )}
+
+          {loadingCreateExpense?.expense && (
+            <TableRow>
+              <TableCell className="font-medium">
+                <Skeleton className="h-4" />
+              </TableCell>
+              <TableCell>
+                <Skeleton className="h-4" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="h-4" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="h-4" />
+              </TableCell>
+              <TableCell className="text-right">
+                <Skeleton className="h-4" />
+              </TableCell>
+            </TableRow>
           )}
         </TableBody>
       </Table>
@@ -92,6 +110,48 @@ function SkeltonTable() {
         <TableCell className="text-right">
           <Skeleton className="h-4" />
         </TableCell>
+        <TableCell className="text-right">
+          <Skeleton className="h-4" />
+        </TableCell>
       </TableRow>
     ));
+}
+
+function DeleteExpenseButton({ id }: { id: number }) {
+  const queryClient = useQueryClient();
+
+  const mutate = useMutation({
+    mutationFn: deleteExpense,
+    onError: () => {
+      toast.error("Error", {
+        description: `Failed to delete expense: ${id}.`,
+      });
+    },
+    onSuccess: () => {
+      toast.success("Expense Deleted", {
+        description: `Successfully deleted expense: ${id}.`,
+      });
+
+      // remove the deleted expense from the existing expenses
+      queryClient.setQueryData(
+        getAllExpensesQueryOptions.queryKey,
+        (existingExpenses) => ({
+          ...existingExpenses,
+          expenses: existingExpenses.expenses.filter(
+            (expense) => expense.id !== id
+          ),
+        })
+      );
+    },
+  });
+
+  return (
+    <Button onClick={() => mutate.mutate({ id })} variant="outline" size="icon">
+      {mutate.isPending ? (
+        <EllipsisIcon className="animate-ping h-4 w-4" />
+      ) : (
+        <Trash2Icon className="h-4 w-4" />
+      )}
+    </Button>
+  );
 }

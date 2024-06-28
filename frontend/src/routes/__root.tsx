@@ -4,6 +4,7 @@ import {
   Link,
   Outlet,
 } from "@tanstack/react-router";
+import { Toaster } from "@/components/ui/sonner";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -44,6 +45,7 @@ function Root() {
       <NavBar />
       <hr />
       <Outlet />
+      <Toaster />
     </>
   );
 }

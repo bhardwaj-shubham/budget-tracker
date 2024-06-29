@@ -41,10 +41,6 @@ function Profile() {
     );
   }
 
-  if (data) {
-    console.log(data);
-  }
-
   return (
     <div className="flex justify-center items-center mt-10">
       <Card className="w-[350px] shadow-md bg-gradient-to-r from-indigo-500 from-50% via-sky-500 via-100%">

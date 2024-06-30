@@ -34,7 +34,7 @@ function CreateExpense() {
     defaultValues: {
       title: "",
       amount: "0",
-      date: new Date().toISOString(),
+      date: "",
     },
     onSubmit: async ({ value }) => {
       const existingExpenses = await queryClient.ensureQueryData(
@@ -53,7 +53,7 @@ function CreateExpense() {
         // insert the new expense into the existing expenses
         queryClient.setQueryData(getAllExpensesQueryOptions.queryKey, {
           ...existingExpenses,
-          expenses: [...existingExpenses.expenses, newExpense],
+          expenses: [newExpense, ...existingExpenses.expenses],
         });
 
         // success state
@@ -168,6 +168,8 @@ function CreateExpense() {
                       mode="single"
                       selected={new Date(field.state.value)}
                       onSelect={(date) => {
+                        console.log(date);
+
                         field.handleChange((date ?? new Date()).toISOString());
                       }}
                       initialFocus

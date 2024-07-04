@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 
 import { deleteExpense, getAllExpensesQueryOptions } from "@/lib/api";
+import { type selectExpense } from "@server/sharedType";
 
 export function DeleteExpenseButton({ id }: { id: number }) {
   const queryClient = useQueryClient();
@@ -16,21 +17,22 @@ export function DeleteExpenseButton({ id }: { id: number }) {
         description: `Failed to delete expense: ${id}.`,
       });
     },
-    onSuccess: () => {
+    onSuccess: async () => {
       toast.success("Expense Deleted", {
         description: `Successfully deleted expense: ${id}.`,
       });
 
-      // remove the deleted expense from the existing expenses
-      queryClient.setQueryData(
-        getAllExpensesQueryOptions.queryKey,
-        (existingExpenses) => ({
-          ...existingExpenses,
-          expenses: existingExpenses.expenses.filter(
-            (expense) => expense.id !== id
-          ),
-        })
+      const existingExpenses = await queryClient.ensureQueryData(
+        getAllExpensesQueryOptions(1)
       );
+
+      // remove the deleted expense from the existing expenses
+      queryClient.setQueryData(["get-all-expenses", 1], {
+        ...existingExpenses,
+        expenses: existingExpenses.expenses.filter(
+          (e: selectExpense) => e.id !== id
+        ),
+      });
     },
   });
 

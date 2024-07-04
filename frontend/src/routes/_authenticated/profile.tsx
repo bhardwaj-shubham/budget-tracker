@@ -47,12 +47,14 @@ function Profile() {
         <CardHeader>
           <Avatar className="h-16 w-16 ">
             <AvatarFallback className="bg-white text-black font-bold text-3xl">
-              {data.user.name[0]}
+              {data.user.given_name[0]}
             </AvatarFallback>
           </Avatar>
         </CardHeader>
         <CardContent>
-          <CardTitle className="text-2xl">Hey, {data.user.name}!</CardTitle>
+          <CardTitle className="text-2xl">
+            Hey, {data.user.given_name}!
+          </CardTitle>
         </CardContent>
         <CardFooter className="flex justify-between mt-4">
           <Button

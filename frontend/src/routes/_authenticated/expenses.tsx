@@ -1,10 +1,6 @@
-import { createFileRoute } from "@tanstack/react-router";
-import {
-  deleteExpense,
-  getAllExpensesQueryOptions,
-  loadingCreateExpenseQueryOptions,
-} from "@/lib/api";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { createFileRoute, useNavigate } from "@tanstack/react-router";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+
 import {
   Table,
   TableBody,
@@ -14,20 +10,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
-import { Trash2Icon, EllipsisIcon } from "lucide-react";
-import { toast } from "sonner";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+
+import {
+  getAllExpensesQueryOptions,
+  loadingCreateExpenseQueryOptions,
+} from "@/lib/api";
+import { SkeltonTable } from "@/components/SkeltonTable";
+import { DeleteExpenseButton } from "@/components/DeleteExpenseButton";
 
 export const Route = createFileRoute("/_authenticated/expenses")({
   component: Expenses,
+  validateSearch: (search) =>
+    search as {
+      page: string;
+    },
 });
 
 function Expenses() {
-  const { data, isPending, error } = useQuery(getAllExpensesQueryOptions);
+  const { page } = Route.useSearch();
+  const navigate = useNavigate();
+
+  const { data, isPending, error } = useQuery({
+    ...getAllExpensesQueryOptions(parseInt(page)),
+    placeholderData: keepPreviousData,
+  });
+
   const { data: loadingCreateExpense } = useQuery(
     loadingCreateExpenseQueryOptions
   );
+
+  const nextPage = () => {
+    if (data?.expenses.length === 0) {
+      return;
+    }
+
+    navigate({ search: { page: (parseInt(page) + 1).toString() } });
+  };
+
+  const prevPage = () => {
+    if (parseInt(page) === 1) {
+      return;
+    }
+
+    navigate({ search: { page: (parseInt(page) - 1).toString() } });
+  };
 
   if (error) {
     return (
@@ -68,90 +102,40 @@ function Expenses() {
             ))
           )}
 
-          {loadingCreateExpense?.expense && (
-            <TableRow>
-              <TableCell className="font-medium">
-                <Skeleton className="h-4" />
-              </TableCell>
-              <TableCell>
-                <Skeleton className="h-4" />
-              </TableCell>
-              <TableCell className="text-right">
-                <Skeleton className="h-4" />
-              </TableCell>
-              <TableCell className="text-right">
-                <Skeleton className="h-4" />
-              </TableCell>
-              <TableCell className="text-right">
-                <Skeleton className="h-4" />
-              </TableCell>
-            </TableRow>
-          )}
+          {loadingCreateExpense?.expense && <SkeltonTable />}
         </TableBody>
       </Table>
+      <div className="my-4">
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={prevPage}
+                className={`${
+                  parseInt(page) === 1
+                    ? "opacity-75 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                disabled={parseInt(page) === 1}
+              />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink>{page}</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext
+                onClick={nextPage}
+                className={`${
+                  data?.expenses.length === 0
+                    ? "opacity-75 cursor-not-allowed"
+                    : "cursor-pointer"
+                }`}
+                disabled={data?.expenses.length === 0}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
+      </div>
     </div>
-  );
-}
-
-function SkeltonTable() {
-  return Array(3)
-    .fill(0)
-    .map((_, id) => (
-      <TableRow key={id}>
-        <TableCell className="font-medium">
-          <Skeleton className="h-4" />
-        </TableCell>
-        <TableCell>
-          <Skeleton className="h-4" />
-        </TableCell>
-        <TableCell className="text-right">
-          <Skeleton className="h-4" />
-        </TableCell>
-        <TableCell className="text-right">
-          <Skeleton className="h-4" />
-        </TableCell>
-        <TableCell className="text-right">
-          <Skeleton className="h-4" />
-        </TableCell>
-      </TableRow>
-    ));
-}
-
-function DeleteExpenseButton({ id }: { id: number }) {
-  const queryClient = useQueryClient();
-
-  const mutate = useMutation({
-    mutationFn: deleteExpense,
-    onError: () => {
-      toast.error("Error", {
-        description: `Failed to delete expense: ${id}.`,
-      });
-    },
-    onSuccess: () => {
-      toast.success("Expense Deleted", {
-        description: `Successfully deleted expense: ${id}.`,
-      });
-
-      // remove the deleted expense from the existing expenses
-      queryClient.setQueryData(
-        getAllExpensesQueryOptions.queryKey,
-        (existingExpenses) => ({
-          ...existingExpenses,
-          expenses: existingExpenses.expenses.filter(
-            (expense) => expense.id !== id
-          ),
-        })
-      );
-    },
-  });
-
-  return (
-    <Button onClick={() => mutate.mutate({ id })} variant="outline" size="icon">
-      {mutate.isPending ? (
-        <EllipsisIcon className="animate-ping h-4 w-4" />
-      ) : (
-        <Trash2Icon className="h-4 w-4" />
-      )}
-    </Button>
   );
 }

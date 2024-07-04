@@ -31,17 +31,18 @@ function CreateExpense() {
   const queryClient = useQueryClient();
 
   const form = useForm({
+    validatorAdapter: zodValidator(),
     defaultValues: {
       title: "",
       amount: "0",
-      date: "",
+      date: new Date().toLocaleDateString(),
     },
     onSubmit: async ({ value }) => {
       const existingExpenses = await queryClient.ensureQueryData(
-        getAllExpensesQueryOptions
+        getAllExpensesQueryOptions(1)
       );
 
-      navigate({ to: "/expenses" });
+      navigate({ to: "/expenses?page=1" });
 
       queryClient.setQueryData(loadingCreateExpenseQueryOptions.queryKey, {
         expense: value,
@@ -51,7 +52,7 @@ function CreateExpense() {
         const newExpense = await createExpense({ value });
 
         // insert the new expense into the existing expenses
-        queryClient.setQueryData(getAllExpensesQueryOptions.queryKey, {
+        queryClient.setQueryData(["get-all-expenses", 1], {
           ...existingExpenses,
           expenses: [newExpense, ...existingExpenses.expenses],
         });
@@ -86,7 +87,6 @@ function CreateExpense() {
         <div className="my-2">
           <form.Field
             name="title"
-            validatorAdapter={zodValidator()}
             validators={{
               onChange: createExpenseSchema.shape.title,
             }}
@@ -111,7 +111,6 @@ function CreateExpense() {
         <div className="my-2">
           <form.Field
             name="amount"
-            validatorAdapter={zodValidator()}
             validators={{
               onChange: createExpenseSchema.shape.amount,
             }}
@@ -137,7 +136,6 @@ function CreateExpense() {
         <div className="my-2">
           <form.Field
             name="date"
-            validatorAdapter={zodValidator()}
             validators={{
               onChange: createExpenseSchema.shape.date,
             }}
@@ -151,7 +149,7 @@ function CreateExpense() {
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full justify-start text-left font-normal my-2",
+                        "w-[240px] justify-start text-left font-normal",
                         !field.state.value && "text-muted-foreground"
                       )}
                     >
@@ -159,7 +157,7 @@ function CreateExpense() {
                       {field.state.value ? (
                         new Date(field.state.value).toLocaleDateString()
                       ) : (
-                        <span>Select a date</span>
+                        <span>Pick a date</span>
                       )}
                     </Button>
                   </PopoverTrigger>
@@ -168,9 +166,9 @@ function CreateExpense() {
                       mode="single"
                       selected={new Date(field.state.value)}
                       onSelect={(date) => {
-                        console.log(date);
-
-                        field.handleChange((date ?? new Date()).toISOString());
+                        field.handleChange(
+                          (date ?? new Date()).toLocaleDateString()
+                        );
                       }}
                       initialFocus
                     />

@@ -22,7 +22,11 @@ function NavBar() {
       </Link>
 
       <div className="p-2 flex gap-2 mx-2">
-        <Link to="/expenses" className="[&.active]:font-bold mx-4">
+        <Link
+          to="/expenses"
+          search={{ page: 1 }}
+          className="[&.active]:font-bold mx-4"
+        >
           Expenses
         </Link>
         <Link to="/create-expense" className="[&.active]:font-bold mx-4">

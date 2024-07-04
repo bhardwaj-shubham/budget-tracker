@@ -6,21 +6,25 @@ import {
   expenses as expenseTable,
   insertExpenseSchema,
 } from "../db/schema/expenses";
-import { and, desc, eq, sum } from "drizzle-orm";
+import { and, asc, desc, eq, sum } from "drizzle-orm";
 import { createExpenseSchema } from "../../sharedType";
+import { z } from "zod";
 
-export const expensesRoute = new Hono();
-
-expensesRoute
+export const expensesRoute = new Hono()
   .get("/", getUser, async (c) => {
     const user = c.var.user;
+    const page = c.req.query("page") || "1";
+
+    const validatedPage = parseInt(page);
+    const limit = 4;
 
     const expenses = await db
       .select()
       .from(expenseTable)
       .where(eq(expenseTable.userId, user.id))
-      .orderBy(expenseTable.createdAt)
-      .limit(10);
+      .orderBy(desc(expenseTable.date))
+      .limit(limit)
+      .offset((validatedPage - 1) * limit);
 
     return c.json({ expenses: expenses });
   })

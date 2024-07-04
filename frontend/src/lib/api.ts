@@ -17,8 +17,8 @@ async function getCurrentUser() {
   return data;
 }
 
-export async function getAllExpenses() {
-  const res = await api.expenses.$get();
+export async function getAllExpenses(page: number) {
+  const res = await api.expenses.$get({ query: { page: page.toString() } });
   if (!res.ok) {
     throw new Error("Cannot fetch the total spent");
   }
@@ -27,8 +27,6 @@ export async function getAllExpenses() {
 }
 
 export async function createExpense({ value }: { value: createExpense }) {
-  new Promise((resolve) => setTimeout(resolve, 5000));
-
   const res = await api.expenses.$post({ json: value });
   if (!res.ok) {
     throw new Error("Cannot add new expense!");
@@ -39,8 +37,6 @@ export async function createExpense({ value }: { value: createExpense }) {
 }
 
 export async function deleteExpense({ id }: { id: number }) {
-  new Promise((resolve) => setTimeout(resolve, 5000));
-
   const res = await api.expenses[":id{[0-9]+}"].$delete({
     param: { id: id.toString() },
   });
@@ -56,11 +52,12 @@ export const userQueryOptions = queryOptions({
   staleTime: Infinity,
 });
 
-export const getAllExpensesQueryOptions = queryOptions({
-  queryKey: ["get-all-expenses"],
-  queryFn: getAllExpenses,
-  staleTime: 1000 * 60 * 5,
-});
+export const getAllExpensesQueryOptions = (page: number = 1) =>
+  queryOptions({
+    queryKey: ["get-all-expenses", page],
+    queryFn: () => getAllExpenses(page),
+    staleTime: 1000 * 60 * 5,
+  });
 
 export const loadingCreateExpenseQueryOptions = queryOptions<{
   expense?: createExpense;
